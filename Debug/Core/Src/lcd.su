@@ -1,0 +1,7 @@
+../Core/Src/lcd.c:5:6:LCD_HighNibble	16	static
+../Core/Src/lcd.c:17:6:LCD_LowNibble	16	static
+../Core/Src/lcd.c:29:6:scmd	16	static
+../Core/Src/lcd.c:37:6:sdata	16	static
+../Core/Src/lcd.c:45:6:lcd_init	8	static
+../Core/Src/lcd.c:58:6:string	16	static
+../Core/Src/lcd.c:66:6:lcd_goto	16	static

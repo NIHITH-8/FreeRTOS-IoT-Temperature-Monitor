@@ -1,0 +1,13 @@
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c:126:14:pxPortInitialiseStack	1
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c:153:13:prvTaskExitError	3
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c:167:6:SVC_Handler	1
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c:186:13:prvPortStartFirstTask	1
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c:207:12:xPortStartScheduler	5
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c:293:6:vPortEndScheduler	2
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c:300:6:vPortEnterCritical	3
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c:313:6:vPortExitCritical	3
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c:324:6:PendSV_Handler	1
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c:381:6:xPortSysTickHandler	2
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c:521:30:vPortSetupTimerInterrupt	1
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c:543:13:vPortEnableVFP	1
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c:559:7:vPortValidateInterruptPriority	4
