@@ -1,1 +1,2 @@
-../Core/Src/esp8266.c:12:6:AT_configs	16	static
+../Core/Src/esp8266.c:12:6:ESP_init	8	static
+../Core/Src/esp8266.c:112:6:AT_configs	16	static

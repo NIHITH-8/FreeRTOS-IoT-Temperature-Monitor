@@ -5,16 +5,12 @@
 
 extern UART_HandleTypeDef huart6;
 extern float temp;
-
+extern volatile float g_temperature;
 char buffer[200];
 char str[120];
 
-void AT_configs(void)
+void ESP_init(void)
 {
-    int len;
-
-    memset(buffer, 0, sizeof(buffer));
-
     // ---------------- AT TEST ----------------
     HAL_UART_Transmit(&huart6, (uint8_t*)"AT\r\n", 4, 1000);
     HAL_UART_Receive(&huart6, (uint8_t*)buffer, sizeof(buffer)-1, 2000);
@@ -85,7 +81,6 @@ void AT_configs(void)
     }
     scmd(0x01);
     string("WIFI OK");
-
     // ---------------- IP ----------------
     memset(buffer, 0, sizeof(buffer));
     HAL_UART_Transmit(&huart6, (uint8_t*)"AT+CIFSR\r\n", 10, 1000);
@@ -103,8 +98,24 @@ void AT_configs(void)
     // ---------------- SINGLE MODE ----------------
     HAL_UART_Transmit(&huart6, (uint8_t*)"AT+CIPMUX=0\r\n", 13, 1000);
     HAL_UART_Receive(&huart6, (uint8_t*)buffer, sizeof(buffer)-1, 2000);
+}
 
-    // ---------------- TCP ----------------
+
+
+
+
+
+
+
+
+
+void AT_configs(void)
+{
+    int len;
+
+    memset(buffer, 0, sizeof(buffer));
+
+    // ---------------- CIP START TCP ----------------
     memset(buffer, 0, sizeof(buffer));
 
     HAL_UART_Transmit(&huart6,
@@ -112,7 +123,7 @@ void AT_configs(void)
         strlen("AT+CIPSTART=\"TCP\",\"142.93.218.33\",80\r\n"),
         1000);
 
-    HAL_UART_Receive(&huart6, (uint8_t*)buffer, sizeof(buffer)-1, 5000);
+    HAL_UART_Receive(&huart6, (uint8_t*)buffer, sizeof(buffer)-1, 1000);
 
     if(strstr(buffer,"OK")==NULL && strstr(buffer,"CONNECT")==NULL)
     {
@@ -123,14 +134,14 @@ void AT_configs(void)
 
     // ---------------- HTTP ----------------
 
-    sprintf(str,"GET /page.php?temp=%d&hum=1&dev=1\r\n",(int)temp);
+    sprintf(str,"GET /page.php?temp=%d&hum=1&dev=1\r\n",(int)g_temperature);
 
     len = strlen(str);
-
+//------------------CIP_SEND------------------
     sprintf(buffer,"AT+CIPSEND=%d\r\n",len);
 
     HAL_UART_Transmit(&huart6,(uint8_t*)buffer,strlen(buffer),1000);
-    HAL_UART_Receive(&huart6,(uint8_t*)buffer,sizeof(buffer)-1,2000);
+    HAL_UART_Receive(&huart6,(uint8_t*)buffer,sizeof(buffer)-1,1000);
 
     if(strchr(buffer,'>')==NULL)
     {
@@ -140,7 +151,7 @@ void AT_configs(void)
     }
 
     HAL_UART_Transmit(&huart6,(uint8_t*)str,strlen(str),1000);
-    HAL_UART_Receive(&huart6,(uint8_t*)buffer,sizeof(buffer)-1,5000);
+    HAL_UART_Receive(&huart6,(uint8_t*)buffer,sizeof(buffer)-1,2000);
 
     if(strstr(buffer,"SEND OK")==NULL && strstr(buffer,"OK")==NULL)
     {
@@ -149,9 +160,9 @@ void AT_configs(void)
         return;
     }
 
-    // ---------------- CLOSE ----------------
+    // ---------------- CIP CLOSE ----------------
     HAL_UART_Transmit(&huart6,(uint8_t*)"AT+CIPCLOSE\r\n",13,1000);
-    HAL_UART_Receive(&huart6,(uint8_t*)buffer,sizeof(buffer)-1,3000);
+    HAL_UART_Receive(&huart6,(uint8_t*)buffer,sizeof(buffer)-1,1000);
     scmd(0x01);
     string("DONE");
 }

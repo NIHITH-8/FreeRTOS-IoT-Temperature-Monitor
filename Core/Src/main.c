@@ -1,29 +1,12 @@
-  
-  
-  
-  
 #include "main.h"
 #include "cmsis_os.h"
 #include "lcd.h"
 #include "lm35.h"
 #include <stdio.h>
 #include "esp8266.h"
-
 float temp;
 int decimal;
-  
-
-  
-  
-
-  
-
-  
-  
-
-  
-
-  
+volatile float g_temperature = 0;
 ADC_HandleTypeDef hadc1;
 
 UART_HandleTypeDef huart6;
@@ -55,9 +38,6 @@ const osMessageQueueAttr_t TemperatureQueue_attributes = {
   .name = "TemperatureQueue"
 };
   
-
-  
-
   
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -66,59 +46,31 @@ static void MX_USART6_UART_Init(void);
 void StartDefaultTask(void *argument);
 void StartTask02(void *argument);
 void StartTask03(void *argument);
-
-  
-
-  
-
-  
-  
-
-  
-  
 int main(void)
 {
-  HAL_Init();
-  SystemClock_Config();
-  MX_GPIO_Init();
-  lcd_init();
-  MX_ADC1_Init();
-  MX_USART6_UART_Init();
+	HAL_Init();
+	SystemClock_Config();
 
-    
- /*
-  osKernelInitialize();
-  TemperatureQueueHandle = osMessageQueueNew (5, 4, &TemperatureQueue_attributes);
+	MX_GPIO_Init();
+	MX_ADC1_Init();
+	MX_USART6_UART_Init();
+
+	lcd_init();
+
+	ESP_init();
+
+	osKernelInitialize();
+
+  //TemperatureQueueHandle = osMessageQueueNew (5, 4, &TemperatureQueue_attributes);
+
   SensorTaskHandle = osThreadNew(StartDefaultTask, NULL, &SensorTask_attributes);
+
   LCDTaskHandle = osThreadNew(StartTask02, NULL, &LCDTask_attributes);
+
   ESPTaskHandle = osThreadNew(StartTask03, NULL, &ESPTask_attributes);
+
   osKernelStart();
-*/
 
-
-   char buf[20];
-
-   int whole;
-
-
-   while(1)
-   {
-       temp = LM35_ReadTemp();
-
-       whole = (int)temp;
-
-       decimal = (int)((temp - whole) * 10);
-
-       sprintf(buf,"T=%d.%d C",whole,decimal);
-
-       scmd(0x01);
-
-       string(buf);
-
-       HAL_Delay(1000);
-       AT_configs();
-
-}
 }
 
   
@@ -158,18 +110,7 @@ void SystemClock_Config(void)
   
 static void MX_ADC1_Init(void)
 {
-
-    
-
-    
-
   ADC_ChannelConfTypeDef sConfig = {0};
-
-    
-
-    
-
-    
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
@@ -186,8 +127,6 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
-
-    
   sConfig.Channel = ADC_CHANNEL_10;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
@@ -195,31 +134,15 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
-
-    
   sConfig.Channel = ADC_CHANNEL_11;
   sConfig.Rank = 2;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
   }
-    
-
-    
-
 }
-
-  
 static void MX_USART6_UART_Init(void)
 {
-
-    
-
-    
-
-    
-
-    
   huart6.Instance = USART6;
   huart6.Init.BaudRate = 115200;
   huart6.Init.WordLength = UART_WORDLENGTH_8B;
@@ -232,92 +155,64 @@ static void MX_USART6_UART_Init(void)
   {
     Error_Handler();
   }
-    
-
-    
 
 }
-
-  
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-    
-
-    
-
-    
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-
-    
   HAL_GPIO_WritePin(GPIOB, LCD_D4_Pin|LCD_D5_Pin|LCD_D6_Pin|LCD_D7_Pin
                           |LCD_RS_Pin|LCD_RW_Pin|LCD_EN_Pin, GPIO_PIN_RESET);
-
-    
   GPIO_InitStruct.Pin = LCD_D4_Pin|LCD_D5_Pin|LCD_D6_Pin|LCD_D7_Pin
                           |LCD_RS_Pin|LCD_RW_Pin|LCD_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    
-
-    
 }
-
-  
-
-  
-
-  
-  
-  
 void StartDefaultTask(void *argument)
 {
-    
-    
-  for(;;)
-  {
-    osDelay(1);
-  }
-    
+	for(;;)
+	{
+	        g_temperature = LM35_ReadTemp();
+	        osDelay(1000);
+	}
 }
 
-  
-  
-  
 void StartTask02(void *argument)
 {
-    
-    
-  for(;;)
-  {
-    osDelay(1);
-  }
-    
-}
+    char buf[20];
 
-  
-  
+    for(;;)
+    {
+        float temp = g_temperature;
+
+        int whole = (int)temp;
+        int decimal = (int)((temp - whole) * 10);
+
+        sprintf(buf,"T=%d.%d C",whole,decimal);
+
+        scmd(0x01);
+        string(buf);
+
+        osDelay(1000);
+    }
+}
   
 void StartTask03(void *argument)
 {
-    
-    
-  for(;;)
-  {
-    osDelay(1);
-  }
-    
+   	for(;;)
+	    {
+	        AT_configs();
+	        osDelay(5000);
+	    }
 }
 
   
 void Error_Handler(void)
 {
-    
-    
+
   __disable_irq();
   while (1)
   {
@@ -328,8 +223,6 @@ void Error_Handler(void)
   
 void assert_failed(uint8_t *file, uint32_t line)
 {
-    
-    
-    
+
 }
 #endif   
